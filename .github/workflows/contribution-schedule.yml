@@ -1,0 +1,37 @@
+name: Contribution Schedule Update
+
+on:
+  schedule:
+    - cron: "15 1 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update-heartbeat:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Update contribution heartbeat
+        run: |
+          mkdir -p .github
+          {
+            echo "Automated contribution heartbeat"
+            echo "Last update (UTC): $(date -u +'%Y-%m-%d %H:%M:%S')"
+          } > .github/contribution-heartbeat.txt
+
+      - name: Commit and push if changed
+        run: |
+          if git diff --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+
+          git config user.name "${{ github.actor }}"
+          git config user.email "${{ github.actor }}@users.noreply.github.com"
+          git add .github/contribution-heartbeat.txt
+          git commit -m "chore: update contribution heartbeat"
+          git push
